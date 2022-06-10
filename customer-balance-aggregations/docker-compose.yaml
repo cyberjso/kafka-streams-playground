@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+
+  zookeeper:
+    container_name: zookeeper
+    image: debezium/zookeeper:1.2
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+      - "7000:7000"
+    environment:
+      - JMXHOST=0.0.0.0
+      - JMXPORT=7000
+      - JMXAUTH=false
+      - JMXSSL=false
+
+  kafka:
+    image: debezium/kafka:1.2
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    links:
+      - zookeeper
+    environment:
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:29092
+
+  customer-balance-aggregations:
+    container_name: customer-balance-aggregations
+    image: joliveira/customer-balance-aggregations:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    links:
+      - kafka
+      - zookeeper
+    environment:
+      - BOOTSTRAP_SERVERS=kafka:9092
