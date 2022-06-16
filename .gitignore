@@ -12,7 +12,7 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
+**/.idea/**
 # AWS User-specific
 .idea/**/aws.xml
 
@@ -120,7 +120,7 @@ replay_pid*
 .gradle
 **/build/
 !src/**/build/
-
+**/gradle/***
 # Ignore Gradle GUI config
 gradle-app.setting
 
