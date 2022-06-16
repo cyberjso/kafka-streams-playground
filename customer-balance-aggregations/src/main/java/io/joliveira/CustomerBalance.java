@@ -7,6 +7,14 @@ public class CustomerBalance {
     private String customerName;
     private BigDecimal total;
 
+    public CustomerBalance() {}
+
+    public CustomerBalance(String customerId, String customerName, BigDecimal total) {
+        this.customerId = customerId;
+        this.customerName = customerName;
+        this.total = total;
+    }
+
     public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }

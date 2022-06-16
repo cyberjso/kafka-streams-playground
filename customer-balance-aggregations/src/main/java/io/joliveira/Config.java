@@ -4,16 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.statsd.StatsdConfig;
-import io.micrometer.statsd.StatsdFlavor;
-import io.micrometer.statsd.StatsdMeterRegistry;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -57,6 +54,11 @@ public class Config {
     @Bean
     public StreamingApp streamingApp() {
         return new StreamingApp();
+    }
+
+    @Bean
+    public Topology topology() {
+        return new TopologyBuilder(mapper(), customerTransactionTopic(), customerBalanceTopic()).build();
     }
 
     @Bean
