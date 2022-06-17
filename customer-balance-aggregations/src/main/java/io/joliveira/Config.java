@@ -35,7 +35,9 @@ public class Config {
 
     @Bean("streamConfig")
     public Properties streamsConfig() {
-        String bootstrapServers = ofNullable(System.getenv("BOOTSTRAP_SERVERS")).orElse("localhost:9092");
+        String bootstrapServers = ofNullable(System.getProperty("bootstrap.servers", System.getenv("BOOTSTRAP_SERVERS")))
+                .orElse("localhost:9092");
+
         String stateDir = ofNullable(System.getenv("STATE_DIR")).orElse("/tmp/kafka/customer-balance-state");
 
         final Properties streamsConfiguration = new Properties();

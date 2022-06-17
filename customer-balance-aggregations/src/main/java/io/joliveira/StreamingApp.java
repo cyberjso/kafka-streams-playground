@@ -39,11 +39,13 @@ public class StreamingApp {
     private NewTopic customerTransactionTopic;
 
     @Autowired
-    @Qualifier("customerTransactionTopic")
+    @Qualifier("customerBalanceTopic")
     private NewTopic customerBalanceTopic;
 
     @Autowired
     private MeterRegistry registry;
+
+    private KafkaStreams kafkaStreams;
 
     public StreamingApp() { }
 
@@ -51,21 +53,28 @@ public class StreamingApp {
     public void init() {
         createTopics(List.of(customerBalanceTopic, customerTransactionTopic));
 
-        KafkaStreams streams = new KafkaStreams(topology, streamProperties);
-        streams.start();
+        kafkaStreams = new KafkaStreams(topology, streamProperties);
+        kafkaStreams.start();
 
-        KafkaStreamsMetrics kafkaStreamsMetrics = new KafkaStreamsMetrics(streams);
+        KafkaStreamsMetrics kafkaStreamsMetrics = new KafkaStreamsMetrics(kafkaStreams);
         kafkaStreamsMetrics.bindTo(registry);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreams::close));
         Runtime.getRuntime().addShutdownHook(new Thread(registry::close));
 
         // Printing out all metrics available
         registry.forEachMeter(meter -> logger.info(meter.getId().toString()));
     }
 
+    public void stop() {
+        kafkaStreams.close();
+        registry.close();
+    }
+
     private void createTopics(List<NewTopic> topics) {
-        String bootstrapServers = ofNullable(System.getenv("BOOTSTRAP_SERVERS")).orElse("localhost:9092");
+        String bootstrapServers = ofNullable(System.getProperty("bootstrap.servers", System.getenv("BOOTSTRAP_SERVERS")))
+                                    .orElse("localhost:9092");
+
         final Map<String, Object> props = Map.of(
                     AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers,
                     AdminClientConfig.RETRIES_CONFIG, 5);
@@ -80,8 +89,11 @@ public class StreamingApp {
                                         .stream()
                                         .filter(topic -> !currentTopics.contains(topic.name()))
                                         .collect(Collectors.toList());
-            CreateTopicsResult result = adminClient.createTopics(newTopics);
-            result.all().get();
+            if (newTopics.size() > 0) {
+                CreateTopicsResult result = adminClient.createTopics(newTopics);
+                result.all().get();
+            }
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to create topic", e);
         }

@@ -8,6 +8,15 @@ public class CustomerTransaction {
     private String customerName;
     private BigDecimal amount;
 
+    public CustomerTransaction() {}
+
+    public CustomerTransaction(String id, String customerId, String customerName,  BigDecimal amount) {
+        this.id = id;
+        this.customerId =  customerId;
+        this.customerName = customerName;
+        this.amount = amount;
+    }
+
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
